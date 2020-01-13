@@ -43,8 +43,6 @@ main(void) {
         printf("Could not get a uart\n");
     }
 
-    uart_poll_out(uart, 'Z');
-
     serv = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (serv < 0) {
