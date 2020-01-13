@@ -41,6 +41,7 @@ main(void) {
     struct device * uart = device_get_binding("UART_0");
     if (!uart) {
         printf("Could not get a uart\n");
+        exit(1);
     }
 
     serv = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
