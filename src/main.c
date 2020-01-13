@@ -19,16 +19,31 @@
 
 #include <kernel.h>
 #include <net/socket.h>
+#include <uart.h>
 
 #endif
 
-#define PORT 4242
+#define PORT 4241
+
+/* struct uart_config const UART0_CONFIG = { */
+
+/* }; */
+
+
+/* My simple test was hardwiring PTC14/15 at J199 pins 3-4 for a hardware echo test. */
 
 void
 main(void) {
     int                serv;
     struct sockaddr_in bind_addr;
     static int         counter;
+
+    struct device * uart = device_get_binding("UART_0");
+    if (!uart) {
+        printf("Could not get a uart\n");
+    }
+
+    uart_poll_out(uart, 'Z');
 
     serv = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -58,7 +73,7 @@ main(void) {
     while (1) {
         struct sockaddr_in client_addr;
         socklen_t          client_addr_len = sizeof(client_addr);
-        char               addr_str[32];
+        char               addr_str[INET_ADDRSTRLEN];
         int                client =
             accept(serv, (struct sockaddr *)&client_addr, &client_addr_len);
 
@@ -74,9 +89,8 @@ main(void) {
         printf("Connection #%d from %s\n", counter++, addr_str);
 
         while (1) {
-            char buf[128], *p;
+            char buf[128];
             int  len = recv(client, buf, sizeof(buf), 0);
-            int  out_len;
 
             if (len <= 0) {
                 if (len < 0) {
@@ -85,19 +99,11 @@ main(void) {
                 break;
             }
 
-            p = buf;
-            do {
-                out_len = send(client, p, len, 0);
-                if (out_len < 0) {
-                    printf("error: send: %d\n", errno);
-                    goto error;
-                }
-                p += out_len;
-                len -= out_len;
-            } while (len);
+            for (int i = 0; i < len; ++i) {
+                uart_poll_out(uart, buf[i]);
+            }
         }
 
-    error:
         close(client);
         printf("Connection from %s closed\n", addr_str);
     }
