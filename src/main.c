@@ -1,27 +1,9 @@
-/*
- * Copyright (c) 2017 Linaro Limited
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifndef __ZEPHYR__
-
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#else
-
 #include <kernel.h>
 #include <net/socket.h>
-#include <uart.h>
-
-#endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <drivers/uart.h>
 
 #define PORT 4241
 
