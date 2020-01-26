@@ -7,13 +7,6 @@
 
 #define PORT 4241
 
-/* struct uart_config const UART0_CONFIG = { */
-
-/* }; */
-
-
-/* My simple test was hardwiring PTC14/15 at J199 pins 3-4 for a hardware echo test. */
-
 void
 main(void) {
     int                serv;
@@ -89,3 +82,8 @@ main(void) {
         printf("Connection from %s closed\n", addr_str);
     }
 }
+
+/**************************************************************************/
+/* Notes                                                                  */
+/**************************************************************************/
+/* My simple test was hardwiring PTC14/15 at J199 pins 3-4 for a hardware echo test. */
