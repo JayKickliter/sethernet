@@ -1,9 +1,9 @@
+#include <drivers/uart.h>
 #include <errno.h>
 #include <kernel.h>
 #include <net/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <drivers/uart.h>
 
 #define PORT 4241
 
