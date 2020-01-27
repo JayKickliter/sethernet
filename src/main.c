@@ -9,6 +9,7 @@
 
 /* == 1 when a network client is connected. */
 atomic_t client_connected = ATOMIC_INIT(0);
+int      client;
 
 void
 serial_task(void);
@@ -80,8 +81,7 @@ main(void) {
         struct sockaddr_in client_addr;
         socklen_t          client_addr_len = sizeof(client_addr);
         char               addr_str[INET_ADDRSTRLEN];
-        int                client =
-            accept(serv, (struct sockaddr *)&client_addr, &client_addr_len);
+        client = accept(serv, (struct sockaddr *)&client_addr, &client_addr_len);
 
         if (client < 0) {
             printf("error: accept: %d\n", errno);
@@ -141,9 +141,17 @@ serial_task(void) {
 
 void
 net_task(void) {
-    for (uint32_t i = 0;; ++i) {
-        k_sleep(1010);
-        /* printf("%u net_task\n", i); */
+    struct device * uart = device_get_binding("UART_0");
+    if (!uart) {
+        printf("Could not get a uart\n");
+        exit(1);
+    }
+    while (1) {
+        uint8_t rx_char;
+        if (!uart_poll_in(uart, &rx_char) && atomic_get(&client_connected)) {
+            send(client, &rx_char, 1, 0);
+        }
+        k_sleep(1);
     }
 }
 
