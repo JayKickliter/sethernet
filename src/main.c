@@ -7,6 +7,9 @@
 
 #define PORT 4241
 
+/* == 1 when a network client is connected. */
+atomic_t client_connected = ATOMIC_INIT(0);
+
 void
 serial_task(void);
 
@@ -91,6 +94,7 @@ main(void) {
                   sizeof(addr_str));
         printf("Connection #%d from %s\n", counter++, addr_str);
 
+        atomic_set(&client_connected, 1);
         while (1) {
             char buf[128];
             int  len = recv(client, buf, sizeof(buf), 0);
@@ -109,6 +113,7 @@ main(void) {
             }
         }
 
+        atomic_set(&client_connected, 0);
         close(client);
         printf("Connection from %s closed\n", addr_str);
     }
