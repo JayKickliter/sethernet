@@ -33,6 +33,9 @@ K_THREAD_DEFINE(net /* name */,
                 0 /* options */,
                 K_NO_WAIT /* delay */);
 
+K_PIPE_DEFINE(serial_tx_pipe, 128, 1);
+K_PIPE_DEFINE(serial_rx_pipe, 128, 1);
+
 void
 main(void) {
     int                serv;
@@ -98,9 +101,11 @@ main(void) {
                 }
                 break;
             }
-
-            for (int i = 0; i < len; ++i) {
-                uart_poll_out(uart, buf[i]);
+            size_t written = 0;
+            int    res =
+                k_pipe_put(&serial_tx_pipe, buf, len, &written, len, K_FOREVER);
+            if (res) {
+                printf("k_pipe_get returned %d", res);
             }
         }
 
@@ -118,9 +123,14 @@ serial_task(void) {
         exit(1);
     }
 
-    for (uint32_t i = 0;; ++i) {
-        k_sleep(1000);
-        printf("%u serial_task\n", i);
+    while (1) {
+        uint8_t buf[128];
+        size_t  read = 0;
+        int res = k_pipe_get(&serial_tx_pipe, buf, sizeof(buf), &read, 1, 20);
+        (void)res;
+        for (int i = 0; i < read; i++) {
+            uart_poll_out(uart, buf[i]);
+        }
     }
 }
 
@@ -128,7 +138,7 @@ void
 net_task(void) {
     for (uint32_t i = 0;; ++i) {
         k_sleep(1010);
-        printf("%u net_task\n", i);
+        /* printf("%u net_task\n", i); */
     }
 }
 
