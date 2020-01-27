@@ -8,6 +8,32 @@
 #define PORT 4241
 
 void
+serial_task(void);
+
+void
+net_task(void);
+
+K_THREAD_DEFINE(serial /* name */,
+                1024 /* stack_size */,
+                serial_task /* entry */,
+                NULL /* p1 */,
+                NULL /* p2 */,
+                NULL /* p3 */,
+                5 /* prio */,
+                0 /* options */,
+                K_NO_WAIT /* delay */);
+
+K_THREAD_DEFINE(net /* name */,
+                1024 /* stack_size */,
+                net_task /* entry */,
+                NULL /* p1 */,
+                NULL /* p2 */,
+                NULL /* p3 */,
+                5 /* prio */,
+                0 /* options */,
+                K_NO_WAIT /* delay */);
+
+void
 main(void) {
     int                serv;
     struct sockaddr_in bind_addr;
@@ -82,6 +108,30 @@ main(void) {
         printf("Connection from %s closed\n", addr_str);
     }
 }
+
+/* The following is just a placeholder and is not thread-safe. */
+void
+serial_task(void) {
+    struct device * uart = device_get_binding("UART_0");
+    if (!uart) {
+        printf("Could not get a uart\n");
+        exit(1);
+    }
+
+    for (uint32_t i = 0;; ++i) {
+        k_sleep(1000);
+        printf("%u serial_task\n", i);
+    }
+}
+
+void
+net_task(void) {
+    for (uint32_t i = 0;; ++i) {
+        k_sleep(1010);
+        printf("%u net_task\n", i);
+    }
+}
+
 
 /**************************************************************************/
 /* Notes                                                                  */
