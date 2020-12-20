@@ -25,7 +25,7 @@ K_THREAD_DEFINE(serial /* name */,
                 NULL /* p3 */,
                 5 /* prio */,
                 0 /* options */,
-                K_NO_WAIT /* delay */);
+                0 /* delay */);
 
 K_THREAD_DEFINE(net /* name */,
                 1024 /* stack_size */,
@@ -35,7 +35,7 @@ K_THREAD_DEFINE(net /* name */,
                 NULL /* p3 */,
                 5 /* prio */,
                 0 /* options */,
-                K_NO_WAIT /* delay */);
+                0 /* delay */);
 
 K_PIPE_DEFINE(serial_tx_pipe, 128, 1);
 K_PIPE_DEFINE(serial_rx_pipe, 128, 1);
@@ -46,7 +46,7 @@ main(void) {
     struct sockaddr_in bind_addr;
     static int         counter;
 
-    struct device * uart = device_get_binding("UART_0");
+    struct device const * uart = device_get_binding("UART_0");
     if (!uart) {
         printf("Could not get a uart\n");
         exit(1);
@@ -122,7 +122,7 @@ main(void) {
 /* The following is just a placeholder and is not thread-safe. */
 void
 serial_task(void) {
-    struct device * uart = device_get_binding("UART_0");
+    struct device const * uart = device_get_binding("UART_0");
     if (!uart) {
         printf("Could not get a uart\n");
         exit(1);
@@ -131,7 +131,8 @@ serial_task(void) {
     while (1) {
         uint8_t buf[128];
         size_t  read = 0;
-        int res = k_pipe_get(&serial_tx_pipe, buf, sizeof(buf), &read, 1, 20);
+        int     res =
+            k_pipe_get(&serial_tx_pipe, buf, sizeof(buf), &read, 1, K_MSEC(20));
         (void)res;
         for (int i = 0; i < read; i++) {
             uart_poll_out(uart, buf[i]);
@@ -141,7 +142,7 @@ serial_task(void) {
 
 void
 net_task(void) {
-    struct device * uart = device_get_binding("UART_0");
+    struct device const * uart = device_get_binding("UART_0");
     if (!uart) {
         printf("Could not get a uart\n");
         exit(1);
@@ -151,7 +152,7 @@ net_task(void) {
         if (!uart_poll_in(uart, &rx_char) && atomic_get(&client_connected)) {
             send(client, &rx_char, 1, 0);
         }
-        k_sleep(1);
+        k_sleep(K_MSEC(1));
     }
 }
 
